@@ -1,9 +1,8 @@
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread::sleep;
 use std::time::Duration;
 
 use assert_no_alloc::*;
-use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
+use cpal::traits::{DeviceTrait, HostTrait};
 use fundsp::hacker::{sine_hz, AudioUnit, BufferArray, BufferRef, NetBackend, U2};
 use fundsp::net::{Net, NodeId};
 use fundsp::MAX_BUFFER_SIZE;
@@ -63,7 +62,6 @@ impl System {
 }
 
 fn main() {
-    static RUN: AtomicBool = AtomicBool::new(true);
     let mut system = System::new();
     let mut backend = system.backend();
 
@@ -78,7 +76,7 @@ fn main() {
         sample_rate: cpal::SampleRate(SAMPLE_RATE),
         buffer_size: cpal::BufferSize::Fixed(AUDIO_BUFFER),
     };
-    let stream = device
+    let _stream = device
         .build_output_stream(
             &config,
             move |data: &mut [f32], _: &cpal::OutputCallbackInfo| {
@@ -93,16 +91,9 @@ fn main() {
         )
         .expect("Failed to build output stream");
 
-    ctrlc::set_handler(move || {
-        system.stop();
-        RUN.store(false, Ordering::SeqCst);
-    })
-    .unwrap();
-    println!("run");
-    while RUN.load(Ordering::SeqCst) {
-        sleep(Duration::from_secs(1));
+    loop {
+        sleep(Duration::from_secs(10));
     }
-    println!("stop");
 }
 
 fn process(data: &mut [f32], system: &mut SystemBackend) {

@@ -6,5 +6,4 @@ edition = "2021"
 [dependencies]
 assert_no_alloc = "1.1.2"
 cpal = "0.15.3"
-ctrlc = "3.4.5"
 fundsp = "0.18.2"
