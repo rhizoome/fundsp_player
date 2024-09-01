@@ -63,7 +63,7 @@ impl System {
 }
 
 fn main() {
-    static run: AtomicBool = AtomicBool::new(true);
+    static RUN: AtomicBool = AtomicBool::new(true);
     let mut system = System::new();
     let mut backend = system.backend();
 
@@ -71,6 +71,7 @@ fn main() {
     let device = host
         .default_output_device()
         .expect("no output device available");
+    println!("device: {}", device.name().unwrap());
 
     let config = cpal::StreamConfig {
         channels: 2,
@@ -94,16 +95,14 @@ fn main() {
 
     ctrlc::set_handler(move || {
         system.stop();
-        run.store(false, Ordering::SeqCst);
+        RUN.store(false, Ordering::SeqCst);
     })
     .unwrap();
     println!("run");
-    while run.load(Ordering::SeqCst) {
+    while RUN.load(Ordering::SeqCst) {
         sleep(Duration::from_secs(1));
     }
     println!("stop");
-    sleep(Duration::from_millis(200));
-    println!("done");
 }
 
 fn process(data: &mut [f32], system: &mut SystemBackend) {
