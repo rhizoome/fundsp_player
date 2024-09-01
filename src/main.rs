@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use assert_no_alloc::*;
 use cpal::traits::{DeviceTrait, HostTrait};
-use fundsp::hacker::{sine_hz, AudioUnit, BufferArray, BufferRef, NetBackend, U2};
+use fundsp::hacker::*;
 use fundsp::net::{Net, NodeId};
 use fundsp::MAX_BUFFER_SIZE;
 
@@ -37,13 +37,33 @@ pub struct System {
     root_id: NodeId,
 }
 
+pub fn sine_hz_sync(hz: f32) -> An<Pipe<Constant<U1>, Sine>> {
+    constant(hz) >> An(Sine::with_phase(0.0))
+}
+
+fn build() -> impl AudioUnit {
+    let mut base = Net::wrap(Box::new(sine_hz_sync(440.0)));
+    for i in (3..=(64 + 32 + 8)).step_by(2) {
+        let n = i as f32;
+        base = base + (sine_hz_sync(440.0 * n) * (1.0 / n));
+    }
+    base * 0.5
+}
+
 impl System {
     pub fn new() -> Self {
-        let sine = sine_hz(440.0) | sine_hz(440.0);
         let mut root = Net::new(0, CHANNELS);
         root.set_sample_rate(SAMPLE_RATE.into());
-        let root_id = root.push(Box::new(sine));
-        root.pipe_output(root_id);
+        let graph = build();
+        let outputs = graph.outputs().clone();
+        let root_id = root.push(Box::new(graph));
+        if outputs == 2 {
+            root.pipe_output(root_id);
+            println!("huhu");
+        } else {
+            root.connect_output(root_id, 0, 0);
+            root.connect_output(root_id, 0, 1);
+        }
         root.check();
         System { root, root_id }
     }
@@ -66,10 +86,17 @@ fn main() {
     let mut backend = system.backend();
 
     let host = cpal::default_host();
-    let device = host
-        .default_output_device()
-        .expect("no output device available");
-    println!("device: {}", device.name().unwrap());
+    let devices = host.devices().expect("Failed to get devices");
+
+    let device_name = "Loopback Audio";
+    let mut desired_device = None;
+    for device in devices {
+        if device.name().unwrap() == device_name {
+            desired_device = Some(device);
+            break;
+        }
+    }
+    let device = desired_device.expect("Device not found");
 
     let config = cpal::StreamConfig {
         channels: 2,
