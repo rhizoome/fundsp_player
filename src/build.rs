@@ -1,3 +1,5 @@
+use std::process;
+
 use fundsp::biquad_bank::{BiquadBank, BiquadCoefsBank};
 use fundsp::hacker::*;
 use fundsp::net::Net;
@@ -73,6 +75,14 @@ pub fn build(name: &str) -> Box<dyn AudioUnit> {
         "bank_current" => Box::new(build_bank_current()),
         "bank_simd" => Box::new(build_bank_simd()),
         "harmonic_series" => Box::new(build_harmonic_series()),
-        &_ => todo!(),
+        &_ => {
+            println!(
+                "\nUnknow build, available builds:
+- bank_current
+- bank_simd
+- harmonic_series"
+            );
+            process::exit(1);
+        }
     }
 }

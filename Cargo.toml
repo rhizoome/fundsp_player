@@ -5,6 +5,6 @@ edition = "2021"
 
 [dependencies]
 assert_no_alloc = "1.1.2"
-clap = "4.5.16"
+clap = { version = "4.5.16", features = ["derive"] }
 cpal = "0.15.3"
 fundsp = { path = "../fundsp" }
