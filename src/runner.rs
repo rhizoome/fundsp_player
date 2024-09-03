@@ -83,7 +83,6 @@ pub fn dummy(seconds: u32, build_name: &str) {
                 unsafe {
                     ptr::write_volatile(sink_ptr, wide_buf);
                 }
-                assert!(sink == wide_buf);
             }
         }
     }
