@@ -3,7 +3,6 @@ use std::process;
 use fundsp::biquad_bank::{BiquadBank, BiquadCoefsBank};
 use fundsp::hacker::*;
 use fundsp::net::Net;
-use typenum::{UInt, UTerm, B0, B1};
 use wide::f32x8;
 
 use crate::runner::SAMPLE_RATE;
@@ -29,9 +28,7 @@ fn build_bank_current() -> impl AudioUnit {
 
 // BANK SIMD
 
-fn res_bank(
-    hz: f32,
-) -> An<BiquadBank<f32x8, UInt<UInt<UInt<UInt<UTerm, B1>, B0>, B0>, B0>>> {
+fn res_bank(hz: f32) -> An<BiquadBank<f32x8, U8>> {
     let whz: [f32; 8] = [
         hz * 1.0,
         hz * 2.0,
