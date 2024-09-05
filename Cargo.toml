@@ -8,3 +8,7 @@ assert_no_alloc = "1.1.2"
 clap = { version = "4.5.16", features = ["derive"] }
 cpal = "0.15.3"
 fundsp = { path = "../fundsp" }
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
