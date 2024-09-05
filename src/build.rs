@@ -49,20 +49,22 @@ fn res_bank(hz: f32) -> An<BiquadBank<f32x8, U8>> {
 }
 
 fn build_bank_simd() -> impl AudioUnit {
-    Net::wrap(Box::new(noise() >> res_bank(440.0) >> join() * 0.1))
+    Net::wrap(Box::new(
+        noise() >> split() >> res_bank(440.0) >> join() * 0.1,
+    ))
 }
 
 // TEST_HARMONIC_SERIES
 
-fn sine_hz_sync(hz: f32) -> An<Pipe<Constant<U1>, Sine>> {
-    constant(hz) >> An(Sine::with_phase(0.0))
+fn sine_hz_sync<F: fundsp::Real>(hz: f32) -> An<Pipe<Constant<U1>, Sine<F>>> {
+    constant(hz) >> An(Sine::<F>::with_phase(0.0))
 }
 
 fn build_harmonic_series() -> impl AudioUnit {
-    let mut base = Net::wrap(Box::new(sine_hz_sync(440.0)));
+    let mut base = Net::wrap(Box::new(sine_hz_sync::<f64>(440.0)));
     for i in (3..=64).step_by(2) {
         let n = i as f32;
-        base = base + (sine_hz_sync(440.0 * n) * (1.0 / n));
+        base = base + (sine_hz_sync::<f64>(440.0 * n) * (1.0 / n));
     }
     base * 0.5
 }
