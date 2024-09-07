@@ -2,10 +2,26 @@ use std::process;
 
 use fundsp::biquad_bank::{BiquadBank, BiquadCoefsBank};
 use fundsp::hacker::*;
-use fundsp::net::Net;
-use wide::f32x8;
+use wide::{f32x8, f64x4};
 
 use crate::runner::SAMPLE_RATE;
+
+// BUTTER BANK
+
+fn butter_bank(hz: f64) -> An<BiquadBank<f64x4, U4>> {
+    let whz: [f64; 4] = [hz * 1.0, hz * 2.0, hz * 3.0, hz * 4.0];
+    let bqc = BiquadCoefsBank::<f64x4, U4>::butter_lowpass(
+        SAMPLE_RATE as f32,
+        f64x4::new(whz),
+    );
+    let bq = BiquadBank::with_coefs(bqc);
+    An(bq)
+}
+
+fn build_butter_bank() -> impl AudioUnit {
+    (noise() >> split() >> butter_bank(440.0) >> (sink() | sink() | sink() | pass()))
+        * 0.1
+}
 
 // BANK CURRENT
 
@@ -64,12 +80,14 @@ fn build_harmonic_series() -> impl AudioUnit {
 
 pub fn build(name: &str) -> Box<dyn AudioUnit> {
     match name {
+        "bank_butter" => Box::new(build_butter_bank()),
         "bank_current" => Box::new(build_bank_current()),
         "bank_simd" => Box::new(build_bank_simd()),
         "harmonic_series" => Box::new(build_harmonic_series()),
         &_ => {
             println!(
                 "\nUnknow build, available builds:
+- bank_butter
 - bank_current
 - bank_simd
 - harmonic_series"
