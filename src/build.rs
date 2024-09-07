@@ -10,20 +10,18 @@ use crate::runner::SAMPLE_RATE;
 // BANK CURRENT
 
 fn build_bank_current() -> impl AudioUnit {
-    Net::wrap(Box::new(
-        (noise()
-            >> split()
-            >> (resonator_hz(440.0, 50.0)
-                | resonator_hz(440.0 * 2.0, 50.0)
-                | resonator_hz(440.0 * 3.0, 50.0)
-                | resonator_hz(440.0 * 4.0, 50.0)
-                | resonator_hz(440.0 * 5.0, 50.0)
-                | resonator_hz(440.0 * 6.0, 50.0)
-                | resonator_hz(440.0 * 7.0, 50.0)
-                | resonator_hz(440.0 * 8.0, 50.0))
-            >> join())
-            * 0.1,
-    ))
+    (noise()
+        >> split()
+        >> (resonator_hz(440.0, 50.0)
+            | resonator_hz(440.0 * 2.0, 50.0)
+            | resonator_hz(440.0 * 3.0, 50.0)
+            | resonator_hz(440.0 * 4.0, 50.0)
+            | resonator_hz(440.0 * 5.0, 50.0)
+            | resonator_hz(440.0 * 6.0, 50.0)
+            | resonator_hz(440.0 * 7.0, 50.0)
+            | resonator_hz(440.0 * 8.0, 50.0))
+        >> join())
+        * 0.1
 }
 
 // BANK SIMD
@@ -49,9 +47,7 @@ fn res_bank(hz: f32) -> An<BiquadBank<f32x8, U8>> {
 }
 
 fn build_bank_simd() -> impl AudioUnit {
-    Net::wrap(Box::new(
-        noise() >> split() >> res_bank(440.0) >> join() * 0.1,
-    ))
+    (noise() >> split() >> res_bank(440.0) >> join()) * 0.1
 }
 
 // TEST_HARMONIC_SERIES
