@@ -61,12 +61,9 @@ fn sine_hz_sync<F: fundsp::Real>(hz: f32) -> An<Pipe<Constant<U1>, Sine<F>>> {
 }
 
 fn build_harmonic_series() -> impl AudioUnit {
-    let mut base = Net::wrap(Box::new(sine_hz_sync::<f64>(440.0)));
-    for i in (3..=64).step_by(2) {
-        let n = i as f32;
-        base = base + (sine_hz_sync::<f64>(440.0 * n) * (1.0 / n));
-    }
-    base * 0.5
+    busi::<U8, _, _>(|i| {
+        (0.5 / (i * 2 + 1) as f32) * sine_hz_sync::<f32>(440.0 * (i * 2 + 1) as f32)
+    })
 }
 
 pub fn build(name: &str) -> Box<dyn AudioUnit> {
